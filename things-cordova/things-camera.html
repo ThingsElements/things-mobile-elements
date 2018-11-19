@@ -103,6 +103,7 @@ Copyright © HatioLab Inc. All rights reserved.
                     },
 
                     srcType: Number,
+                    saveToPhotoAlbum: Boolean,
                     imageSrc: {
                         type: String,
                         notify: true
@@ -138,6 +139,7 @@ Copyright © HatioLab Inc. All rights reserved.
                     encodingType: Camera.EncodingType.JPEG,
                     mediaType: Camera.MediaType.PICTURE,
                     allowEdit: false,
+                    saveToPhotoAlbum: this.saveToPhotoAlbum,
                     correctOrientation: true,  //Corrects Android orientation quirks
                 }
                 return options;

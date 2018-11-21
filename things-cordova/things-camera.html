@@ -76,8 +76,10 @@ Copyright © HatioLab Inc. All rights reserved.
 
                 <!-- <iron-image 
                     style="width:100%; height:auto;"  -->
-                <iron-image src="[[imageSrc]]" sizing="contain">
-                </iron-image>
+                <dom-if if="[[isShowImage]]">
+                    <iron-image src="[[imageSrc]]" sizing="contain">
+                    </iron-image>
+                </dom-if>
             </template>
         </dom-if>
     </template>
@@ -101,6 +103,8 @@ Copyright © HatioLab Inc. All rights reserved.
                         notify: true,
                         computed: '_computeIsEnable()'
                     },
+
+                    isShowImage: Boolean,
 
                     srcType: Number,
                     saveToPhotoAlbum: Boolean,

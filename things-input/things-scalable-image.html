@@ -9,7 +9,7 @@ Copyright © HatioLab Inc. All rights reserved.
   <template>
     <style>
       :host {
-        --my-width: calc(100% - 20px);
+        --things-image-width: calc(100% - 20px);
 
         --things-image-padding: 5px;
         --things-image-border: 1px solid #f4f4f4;
@@ -39,6 +39,8 @@ Copyright © HatioLab Inc. All rights reserved.
 
       img {
         position: relative;
+        width: var(--things-image-width);
+        height: var(--things-image-height);
         left: 0px;
         top: 0px;
       }

@@ -16,16 +16,21 @@ Copyright © HatioLab Inc. All rights reserved.
 				width: 100%;
 			}
 		</style>
-		<sys-ajax auto disable-spinner curl="[[curl]]" select-fields="[[selectFields]]" custom-params="[[queryParams]]" last-response="{{data}}">
+		<sys-ajax role="loadData" auto=[[auto]] disable-spinner curl="[[curl]]" select-fields="[[selectFields]]"
+		 custom-params="[[customParams]]" last-response="{{data}}">
 		</sys-ajax>
 
-		<vaadin-combo-box label="[[label]]" items="[[items]]" name="[[name]]" value="{{value}}" filter="{{filter}}" readonly="[[readonly]]"
-		 item-value-path="[[valuePath]]" item-label-path="[[labelPath]]" allow-custom-value="[[allowCustomValue]]" on-keyup="_handleKeyUp"
-		 on-value-changed="_handleValueChanged">
+		<vaadin-combo-box label="[[label]]" items="[[items]]" name="[[name]]" value="{{value}}"
+		 filter="{{filter}}" readonly="[[readonly]]" item-value-path="[[valuePath]]" item-label-path="[[labelPath]]"
+		 allow-custom-value="[[allowCustomValue]]" on-keyup="_handleKeyUp" on-value-changed="_handleValueChanged">
 			<template>
-				<paper-item-body>
+				<!-- <paper-item-body>
 					<div>[[item.name]]: [[item.description]]</div>
 					<div hidden>[[item.id]]</div>
+				</paper-item-body> -->
+				<paper-item-body>
+					<div>[[_computeListValues(item)]]</div>
+					<div hidden>[[_computeValueField(item)]]</div>
 				</paper-item-body>
 			</template>
 		</vaadin-combo-box>
@@ -37,6 +42,10 @@ Copyright © HatioLab Inc. All rights reserved.
 
 			static get properties() {
 				return {
+					auto: {
+						type: Boolean,
+						value: false
+					},
 					resourceType: {
 						type: String,	// ENTITY, CODE
 						observer: '_resourceTypeChanged'
@@ -52,13 +61,23 @@ Copyright © HatioLab Inc. All rights reserved.
 						type: Array,
 						value: ['id', 'name', 'description']
 					},
-					queryParams: Object,
+					_initParams: Object,
+					queryParams: {
+						type: Object,
+						observer: '_queryParamsChanged'
+					},
+					paramsNecessary: {
+						type: Boolean,
+						value: false
+					},
+					customParams: Object,
 					valuePath: String,
 					labelPath: String,
+					descPath: String,
 					filter: String,
 					pageSize: {
 						type: Number,
-						value: 50
+						value: 200
 					},
 					/**
 					* lastRequest's response.
@@ -85,7 +104,8 @@ Copyright © HatioLab Inc. All rights reserved.
 					},
 					objValue: {
 						type: Object,
-						notify: true
+						notify: true,
+						computed: '_computeObjValue(value, label)'
 					},
 					opened: Boolean,
 					disabled: Boolean,
@@ -95,13 +115,28 @@ Copyright © HatioLab Inc. All rights reserved.
 					focused: Boolean,
 					focusRing: Boolean,
 					loading: Boolean,
-					allowCustomValue: Boolean
+					allowCustomValue: Boolean,
+
+					textfieldCustomStyle: String
 				}
 			}
 
 			connectedCallback() {
 				// console.log('connectedCallback');
 				super.connectedCallback();
+
+				// FIXME
+				var style = document.createElement('style')
+				style.innerHTML = 'vaadin-text-field { \n';
+				style.innerHTML += 'display: block;\n';
+				style.innerHTML += 'padding: 8px 0; \n';
+				style.innerHTML += '@apply --paper-input-container;\n';
+				if (this.textfieldCustomStyle) {
+					style.innerHTML += this.textfieldCustomStyle;
+				}
+				style.innerHTML += '\n}';
+
+				this.shadowRoot.querySelector('vaadin-combo-box').shadowRoot.appendChild(style);
 			}
 
 			disconnectedCallback() {
@@ -109,41 +144,126 @@ Copyright © HatioLab Inc. All rights reserved.
 			}
 
 			_computeCurl(resourceType, resourceRef) {
-				var url = '';
-				this.queryParams = {}
-				if (resourceType === 'CODE') {
-					this.pageSize = 500;
-					if (resourceRef) {
-						this.queryParams.name = resourceRef;
-					}
-					url += '/common_codes/show_by_name';
-				} else {
-					url += '/data/entity';
-					if (resourceRef) {
-						this.queryParams.name = resourceRef;
-					}
+				if (!resourceType || !resourceRef) {
+					return;
 				}
-				this.queryParams.limit = this.pageSize;
+
+				var url = '';
+				this._initParams = {};
+				this._initParams.name = resourceRef;
+				this._initParams.limit = this.pageSize;
+				this.customParams = Object.assign({}, this._initParams, this.customParams);
+				switch (resourceType) {
+					case 'CODE':
+						url = '/common_codes/show_by_name';
+						break;
+					case 'ENTITY':
+						url = '/data/entity';
+						break;
+					case 'SERVICE':
+						if (!resourceRef) {
+							return;
+						}
+						url = '/data/service';
+						break;
+				}
 
 				return url;
 			}
 
-			// _computeObjValue(value) {
-			// 	var obj = {};
-			// 	obj[this.valuePath] = value;
-			// 	obj[this.labelPath] = label;
-			// 	console.log(obj);
-			// 	return obj;
-			// }
+			_computeListValues(item) {
+				if (!item) {
+					return;
+				}
+
+				var value = '';
+				switch (this.resourceType) {
+					case 'CODE':
+						value = `${item[this.valuePath]}: ${item[this.labelPath]}`;
+						break;
+					case 'ENTITY':
+					case 'SERVICE':
+						value = `${item[this.labelPath]}: ` + (item[this.descPath] || '');
+						break;
+					default:
+						value = `${item[this.valuePath]}: ${item[this.labelPath]}`;
+				}
+
+				return value;
+			}
+
+			_computeValueField(item) {
+				if (!item) {
+					return;
+				}
+
+				return `${item[this.valuePath]}`;
+			}
+
+			_computeObjValue(value, label) {
+				if (!value || !label) {
+					return;
+				}
+
+				if (!this.items) {
+					return;
+				}
+
+				var obj = {};
+				var items = this.items;
+				for (let i = 0; i < items.length; i++) {
+					let item = items[i];
+					if (item[this.valuePath] === value) {
+						obj = item;
+						break;
+					}
+				}
+
+				return obj;
+			}
 
 			_resourceTypeChanged(resourceType) {
-				if (resourceType === 'CODE') {
-					this.valuePath = 'name';
-					this.labelPath = 'description';
-				} else {
-					this.valuePath = 'id';
-					this.labelPath = 'name';
+				switch (resourceType) {
+					case 'CODE':
+						this.valuePath = this.valuePath || 'name';
+						this.labelPath = this.labelPath || 'description';
+						break;
+					case 'ENTITY':
+						this.valuePath = this.valuePath || 'id';
+						this.labelPath = this.labelPath || 'name';
+						this.descPath = this.descPath || 'description';
+						break;
+					case 'SERVICE':
+						break;
 				}
+			}
+
+			_queryParamsChanged(queryParams) {
+				var queryString = '';
+				if (queryParams instanceof Array) {
+					queryString = JSON.stringify(queryParams);
+				} else if (queryParams instanceof Object) {
+					var objString = [];
+					Object.keys(queryParams).forEach((key, idx) => {
+						objString.push({
+							name: key,
+							value: queryParams[key]
+						});
+					});
+
+					queryString = JSON.stringify(objString);
+				}
+
+				var params = { query: queryString };
+				this.customParams = Object.assign({}, this._initParams || {}, params);
+
+				// let ajax = this.shadowRoot.querySelector('[role=loadData]');
+				// ajax.generateRequest();
+			}
+
+			loadData() {
+				let ajax = this.shadowRoot.querySelector('[role=loadData]');
+				ajax.generateRequest();
 			}
 
 			_dataChanged(data) {
@@ -151,16 +271,16 @@ Copyright © HatioLab Inc. All rights reserved.
 					return;
 				}
 
+				if (data instanceof Array) {
+					// do nothing
+				} else {
+					data = data.items;
+				}
+
 				var items = [];
-				var valuePath = this.valuePath;
-				var labelPath = this.labelPath;
-				var resourceType = this.resourceType;
-				data.items.forEach((item) => {
-					if (resourceType === 'CODE') {
-						items.push({ name: item[valuePath], description: item[labelPath] });
-					} else {
-						items.push({ id: item[valuePath], name: item[labelPath], description: item.description });
-					}
+				data.forEach((item) => {
+					let obj = Object.assign({}, item);
+					items.push(obj);
 				});
 
 				this.items = items;
@@ -168,6 +288,10 @@ Copyright © HatioLab Inc. All rights reserved.
 
 			_handleKeyUp(e) {
 				e.preventDefault();
+
+				if (this.resourceType != 'ENTITY') {
+					return;
+				}
 
 				// Clear the timeout if it has already been set.
 				// This will prevent the previous task from executing
@@ -178,8 +302,8 @@ Copyright © HatioLab Inc. All rights reserved.
 
 				// Make a new timeout set to go off in 800ms
 				this.timeout = setTimeout((me) => {
-					var params = Object.assign({}, me.queryParams, { keyword: me.filter });
-					me.queryParams = params;
+					var params = Object.assign({}, me._initParams, me.queryParams, { keyword: me.filter });
+					me.customParams = params;
 				}, 800, this);
 			}
 

@@ -20,7 +20,7 @@ Copyright © HatioLab Inc. All rights reserved.
 
             _createElement(meta) {
                 var newElement;
-                var { label, type, resourceRef, resourceType, name, userData, readonly,
+                var { label, type, auto, resourceRef, resourceType, name, userData, readonly,
                     hidden, resourceUrl, operator, displayField, valueField, selectFields } = meta;
 
                 // console.log(type);
@@ -59,6 +59,7 @@ Copyright © HatioLab Inc. All rights reserved.
                         newElement.setAttribute('resource-ref', resourceRef);
                         newElement.setAttribute('name', name);
                         newElement.setAttribute('label', label);
+                        newElement.setAttribute('auto', auto);
                         // newElement.setAttribute('display-field', displayField);
                         // newElement.setAttribute('value-field', valueField);
                         break;

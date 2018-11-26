@@ -44,7 +44,7 @@ Copyright © HatioLab Inc. All rights reserved.
 				return {
 					auto: {
 						type: Boolean,
-						value: true
+						value: false
 					},
 					resourceType: {
 						type: String,	// ENTITY, CODE
@@ -115,7 +115,9 @@ Copyright © HatioLab Inc. All rights reserved.
 					focused: Boolean,
 					focusRing: Boolean,
 					loading: Boolean,
-					allowCustomValue: Boolean
+					allowCustomValue: Boolean,
+
+					textfieldCustomStyle: String
 				}
 			}
 
@@ -129,7 +131,11 @@ Copyright © HatioLab Inc. All rights reserved.
 				style.innerHTML += 'display: block;\n';
 				style.innerHTML += 'padding: 8px 0; \n';
 				style.innerHTML += '@apply --paper-input-container;\n';
+				if (this.textfieldCustomStyle) {
+					style.innerHTML += this.textfieldCustomStyle;
+				}
 				style.innerHTML += '\n}';
+
 				this.shadowRoot.querySelector('vaadin-combo-box').shadowRoot.appendChild(style);
 			}
 
@@ -155,6 +161,9 @@ Copyright © HatioLab Inc. All rights reserved.
 						url = '/data/entity';
 						break;
 					case 'SERVICE':
+						if (!resourceRef) {
+							return;
+						}
 						url = '/data/service';
 						break;
 				}
@@ -250,6 +259,11 @@ Copyright © HatioLab Inc. All rights reserved.
 
 				// let ajax = this.shadowRoot.querySelector('[role=loadData]');
 				// ajax.generateRequest();
+			}
+
+			loadData() {
+				let ajax = this.shadowRoot.querySelector('[role=loadData]');
+				ajax.generateRequest();
 			}
 
 			_dataChanged(data) {

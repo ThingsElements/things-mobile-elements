@@ -9,6 +9,8 @@ Copyright © HatioLab Inc. All rights reserved.
 
 <dom-module id="things-chart">
     <template>
+        <style>
+        </style>
     </template>
 
     <script>
@@ -19,7 +21,7 @@ Copyright © HatioLab Inc. All rights reserved.
                     type: String,
                     options: {
                         type: Object,
-                        computed: '_computedOptions(title, borderWidth, legendPos, scales)'
+                        computed: '_computedOptions(title, borderWidth, legendPos, scales, labelSettings)'
                     },
                     columns: {
                         type: Array,
@@ -168,8 +170,8 @@ Copyright © HatioLab Inc. All rights reserved.
             /**
              * 
              */
-            _computedOptions(title, borderWidth, legendPos, scales) {
-                return {
+            _computedOptions(title, borderWidth, legendPos, scales, labelSettings) {
+                var options = {
                     // Elements options apply to all of the options unless overridden in a dataset
                     // In this case, we are setting the border of each horizontal bar to be 2px wide
                     elements: {
@@ -178,14 +180,35 @@ Copyright © HatioLab Inc. All rights reserved.
                         }
                     },
                     responsive: true,
+                    maintainAspectRatio: true,
+                    transparencyEffects: true,
+                    dataSetBorderWidth: 0,
                     legend: {
-                        position: legendPos
+                        display: true,
+                        // position: legendPos,
+                        fullWidth: true,
+                        // labels: labelSetting
                     },
-                    title: {
+
+                    maintainAspectRatio: false
+                };
+
+                if (legendPos) {
+                    options.legend.position = legendPos;
+                }
+
+                if (labelSettings) {
+                    options.legend.labels = labelSettings;
+                }
+
+                if (title) {
+                    options.title = {
                         display: true,
                         text: title
-                    }
+                    };
                 }
+
+                return options;
             }
         }
 

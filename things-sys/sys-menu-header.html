@@ -14,43 +14,50 @@ Copyright © HatioLab Inc. All rights reserved.
 <dom-module id="sys-menu-header">
     <template>
         <style>
-           div.app-name{
-               height:45px;
-               text-align:center;
-               line-height:45px;
-           }
-           div.app-extra-btns{
-               background-color:var(--things-sidebar-background-color);
-               padding:9px 10px 0 0;
-               height:32px;
-               font-size:15px;
-           }
-           div.app-extra-btns paper-icon-button{
-               padding:0 !important;margin-left:10px;
-               width:23px;height:23px;
-               float:right;
-           }
-           div.app-extra-btns div paper-icon-button{
-               margin-left:0;margin-right:4px;
-               float:left
-           }
-           .app-extra-btns div{
-                display:inline-block;
-                margin-left:10px;
-           }
+            div.app-name {
+                height: 45px;
+                text-align: center;
+                line-height: 45px;
+            }
+
+            div.app-extra-btns {
+                background-color: var(--things-sidebar-background-color);
+                padding: 9px 10px 0 0;
+                height: 32px;
+                font-size: 15px;
+            }
+
+            div.app-extra-btns paper-icon-button {
+                padding: 0 !important;
+                margin-left: 10px;
+                width: 23px;
+                height: 23px;
+                float: right;
+            }
+
+            div.app-extra-btns div paper-icon-button {
+                margin-left: 0;
+                margin-right: 4px;
+                float: left
+            }
+
+            .app-extra-btns div {
+                display: inline-block;
+                margin-left: 10px;
+            }
         </style>
 
-        <iron-localstorage 
+        <!-- <iron-localstorage 
             name="setting.user"
             value="{{user}}">
-        </iron-localstorage>
+        </iron-localstorage> -->
 
         <!-- <paper-icon-button on-tap="_tapFooter" icon="home"></paper-icon-button> -->
         <div class="app-name">X-MOBILE</div>
         <div class="app-extra-btns">
             <div>
                 <paper-icon-button id="me" icon="account-circle"></paper-icon-button>
-                <label>[[user.login]]</label>
+                <label>[[currentUserId]]</label>
             </div>
             <paper-icon-button id="contacts" on-tap="_tapIcon" icon="perm-phone-msg"></paper-icon-button>
             <paper-icon-button id="setting" on-tap="_tapIcon" icon="settings"></paper-icon-button>
@@ -74,12 +81,25 @@ Copyright © HatioLab Inc. All rights reserved.
                     route: {
                         type: String,
                         notify: true
-                    }
+                    },
+                    user: {
+                        type: Object,
+                        observer: '_userChanged'
+                    },
+                    currentUserId: String
                 };
             }
 
             constructor() {
                 super();
+            }
+
+            _userChanged(user) {
+                if (!user) {
+                    return;
+                }
+
+                this.currentUserId = user.login;
             }
 
             _tapIcon(e) {

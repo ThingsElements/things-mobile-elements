@@ -4,55 +4,58 @@ Copyright © HatioLab Inc. All rights reserved.
 -->
 
 <link rel="import" href="../../polymer/polymer-element.html">
+<!-- <link rel="import" href="../../granite-bootstrap/granite-bootstrap.html"> -->
 
 <link rel="import" href="./things-chart.html">
 
 <dom-module id="things-pie-chart">
     <template>
         <style>
-            div {
-                padding:15px;
-            }
-            canvas{
-                width:100%;height:100%;
+            canvas {
+                width: 100%;
+                /* height: 100%; */
             }
         </style>
+
+        <!-- <div class="row"> -->
         <div>
+            <!-- <div class="col-2"> -->
             <canvas id="canvas"></canvas>
         </div>
+        <!-- </div> -->
     </template>
-    
+
     <script>
-    class ThingsPieChart extends customElements.get('things-chart') {
-        static get is() { return 'things-pie-chart'; }
-        static get properties() {
-            return {
-                type: {
-                    type: String,
-                    value: 'pie'
-                },
+        class ThingsPieChart extends customElements.get('things-chart') {
+            static get is() { return 'things-pie-chart'; }
+            static get properties() {
+                return {
+                    type: {
+                        type: String,
+                        value: 'pie'
+                    },
 
-                // options: {
-                //     type: Object,
-                //     value: {
-                //         responsive: true
-                //     }
-                // },
-                // columns: Array,
-                // backgroundColors: Array,
-                // borderColors: Array,
-                // rows: Array,
-                // chart: Object,
-                // title: String,
-                // isStacked: Boolean,
-                // scales: {
-                //     type: Object,
-                //     computed: '_computeScales(isStacked)'
-                // }
-            };
+                    // options: {
+                    //     type: Object,
+                    //     value: {
+                    //         responsive: true
+                    //     }
+                    // },
+                    // columns: Array,
+                    // backgroundColors: Array,
+                    // borderColors: Array,
+                    // rows: Array,
+                    // chart: Object,
+                    // title: String,
+                    // isStacked: Boolean,
+                    // scales: {
+                    //     type: Object,
+                    //     computed: '_computeScales(isStacked)'
+                    // }
+                };
+            }
         }
-    }
 
-    customElements.define(ThingsPieChart.is, ThingsPieChart);
+        customElements.define(ThingsPieChart.is, ThingsPieChart);
     </script>
 </dom-module>
